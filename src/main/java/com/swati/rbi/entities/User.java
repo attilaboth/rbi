@@ -7,11 +7,11 @@ import javax.persistence.*;
 
 @Entity
 @Data
-@Table(name="user")
+@Table(name = "user")
 public class User {
 
     @Id
-    @GeneratedValue(strategy=GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long ID;
 
     private String name;
@@ -19,6 +19,5 @@ public class User {
     private String email;
 
     private String password;
-
 
 }

@@ -3,6 +3,7 @@ package com.swati.rbi.contoller;
 import com.swati.rbi.entities.User;
 import com.swati.rbi.repository.UserDto;
 import com.swati.rbi.service.UserService;
+import com.swati.rbi.utils.ValidatorUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -29,26 +30,29 @@ public class UserController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UserDto> addNewUser(@RequestBody User user) {
-        log.debug("Request to addNewUser recieved: {}", user);
+        final String userName = user.getName();
+        final String emailAddr = user.getEmail();
+        log.debug("Request to addNewUser received: {}, {}", userName, emailAddr);
 
-        try{
-            //check user
-            Optional<UserDto> foundByNameAndEmail = userService.findByNameAndEmail(user.getName(), user.getEmail());
-            if (foundByNameAndEmail.isPresent()) {
-                log.warn("Already exists");
-                //FIXME
-                return ResponseEntity.status(HttpStatus.CONFLICT).build();
-            } else {
-                // if not existing persisit
-                UserDto userDto = userService.addUser(user);
-                // handle unhappy path
-                return ResponseEntity.status(HttpStatus.CREATED).body(userDto);
+        if (ValidatorUtil.isNotValidParam(userName) || ValidatorUtil.isNotValidParam(emailAddr)) {
+            log.warn("{} or {} is invalid parameter.", userName, emailAddr);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        } else {
+            try {
+                Optional<UserDto> foundByNameAndEmail = userService.findByNameAndEmail(userName, emailAddr);
+                if (foundByNameAndEmail.isPresent()) {
+                    log.warn("{} already exists.", userName);
+                    return ResponseEntity.status(HttpStatus.CONFLICT).build();
+                } else {
+                    UserDto userDto = userService.addUser(user);
+                    log.warn("{} was added to database.", userDto.getName());
+                    return ResponseEntity.status(HttpStatus.CREATED).body(userDto);
+                }
+            } catch (Exception ex) {
+                log.error(ex.getLocalizedMessage());
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
             }
-        } catch (Exception ex){
-            log.error(ex.getLocalizedMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-
     }
 
 }

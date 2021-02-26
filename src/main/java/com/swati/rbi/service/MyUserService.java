@@ -14,7 +14,7 @@ import java.util.Optional;
 @Service
 public class MyUserService implements UserService {
 
-    private static ModelMapper modelMapper = new ModelMapper();
+    private static final ModelMapper modelMapper = new ModelMapper();
 
     private UserRepository userRepository;
 
@@ -24,9 +24,7 @@ public class MyUserService implements UserService {
 
     @Override
     public UserDto addUser(User user) {
-
         User savedUser = userRepository.save(user);
-
         return modelMapper.map(savedUser, UserDto.class);
 
     }
@@ -48,7 +46,7 @@ public class MyUserService implements UserService {
     public Optional<UserDto> findByNameAndEmail(String name, String email) {
         User byNameAndEmail = userRepository.findByNameAndEmail(name, email);
         UserDto userDto2return = null;
-        if(byNameAndEmail != null){
+        if (byNameAndEmail != null) {
             userDto2return = modelMapper.map(byNameAndEmail, UserDto.class);
         }
         return Optional.ofNullable(userDto2return);
